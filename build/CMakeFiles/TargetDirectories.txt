@@ -1,0 +1,6 @@
+/home/conner/coding/wildfire/build/CMakeFiles/MAIN.dir
+/home/conner/coding/wildfire/build/CMakeFiles/raygui.dir
+/home/conner/coding/wildfire/build/CMakeFiles/clean_all.dir
+/home/conner/coding/wildfire/build/CMakeFiles/run_all.dir
+/home/conner/coding/wildfire/build/CMakeFiles/edit_cache.dir
+/home/conner/coding/wildfire/build/CMakeFiles/rebuild_cache.dir

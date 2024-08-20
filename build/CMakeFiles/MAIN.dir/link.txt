@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/MAIN.dir/main.cpp.o CMakeFiles/MAIN.dir/RenderEngine.cpp.o CMakeFiles/MAIN.dir/game.cpp.o CMakeFiles/MAIN.dir/lib/Vec2f.cpp.o CMakeFiles/MAIN.dir/lib/Vec2i.cpp.o -o MAIN  -lraylib -lGL -lm -lpthread -ldl -lrt -lX11 
