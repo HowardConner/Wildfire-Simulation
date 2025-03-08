@@ -8,11 +8,11 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/conner/coding/wildfire/RenderEngine.cpp" "CMakeFiles/MAIN.dir/RenderEngine.cpp.o" "gcc" "CMakeFiles/MAIN.dir/RenderEngine.cpp.o.d"
-  "/home/conner/coding/wildfire/game.cpp" "CMakeFiles/MAIN.dir/game.cpp.o" "gcc" "CMakeFiles/MAIN.dir/game.cpp.o.d"
-  "/home/conner/coding/wildfire/lib/Vec2f.cpp" "CMakeFiles/MAIN.dir/lib/Vec2f.cpp.o" "gcc" "CMakeFiles/MAIN.dir/lib/Vec2f.cpp.o.d"
-  "/home/conner/coding/wildfire/lib/Vec2i.cpp" "CMakeFiles/MAIN.dir/lib/Vec2i.cpp.o" "gcc" "CMakeFiles/MAIN.dir/lib/Vec2i.cpp.o.d"
-  "/home/conner/coding/wildfire/main.cpp" "CMakeFiles/MAIN.dir/main.cpp.o" "gcc" "CMakeFiles/MAIN.dir/main.cpp.o.d"
+  "/home/conner/coding/wildfire4/RenderEngine.cpp" "CMakeFiles/MAIN.dir/RenderEngine.cpp.o" "gcc" "CMakeFiles/MAIN.dir/RenderEngine.cpp.o.d"
+  "/home/conner/coding/wildfire4/game.cpp" "CMakeFiles/MAIN.dir/game.cpp.o" "gcc" "CMakeFiles/MAIN.dir/game.cpp.o.d"
+  "/home/conner/coding/wildfire4/lib/Vec2f.cpp" "CMakeFiles/MAIN.dir/lib/Vec2f.cpp.o" "gcc" "CMakeFiles/MAIN.dir/lib/Vec2f.cpp.o.d"
+  "/home/conner/coding/wildfire4/lib/Vec2i.cpp" "CMakeFiles/MAIN.dir/lib/Vec2i.cpp.o" "gcc" "CMakeFiles/MAIN.dir/lib/Vec2i.cpp.o.d"
+  "/home/conner/coding/wildfire4/main.cpp" "CMakeFiles/MAIN.dir/main.cpp.o" "gcc" "CMakeFiles/MAIN.dir/main.cpp.o.d"
   )
 
 # Targets to which this target links.

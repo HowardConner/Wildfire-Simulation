@@ -1,317 +1,59 @@
 #include "game.hpp"
 
-void initFireSim(FireSimulationData& simData)
+inline Vec2i dir_to_Vec2i(const Direction dir)
 {
-    TileComponent baseTile;  // use default values for stone
-    WindComponent baseWindTile;         // use default (zero)
-    SimulationPreset preset(load11x11FlameSpreadMixedCenterWind());
-
-    // init the size of the vectors
-    simData.boardDimesions = preset.BOARD_DIMS;
-    simData.enviroLayer.setSize(preset.BOARD_DIMS.x, preset.BOARD_DIMS.y);
-    simData.windLayer.setSize(preset.BOARD_DIMS.x, preset.BOARD_DIMS.y);
-    simData.averageHeatMapC.setSize(preset.BOARD_DIMS.x, preset.BOARD_DIMS.y);
-    
-    simData.enviroLayer.fill(baseTile);
-    simData.windLayer.fill(baseWindTile);
-    simData.averageHeatMapC.fill(24);
-
-    // load the presets:
-    for(int i = 0; i < preset.BOARD_DIMS.y*preset.BOARD_DIMS.x; i++)
-    {
-        switch (preset.enviromentData.at(i))
-        {
-        // case Foliage::STONE :
-        //     generateStonePrebuilt(simData.enviroLayer(i), preset.enviromentData.at(i), preset.percentHumidityData.at(i));
-        //     break;
-        
-        case Foliage::WATER :
-            generateWaterPrebuilt(simData.enviroLayer(i));
-            break;
-
-        case Foliage::GRASS :
-            generateGrassPrebuilt(simData.enviroLayer(i));
-            break;
-        // case Foliage::BRUSH :
-        //     generateBrushPrebuilt(simData.enviroLayer(i), preset.enviromentData.at(i), preset.percentHumidityData.at(i));
-        //     break;
-        // case Foliage::SPARSE_FOREST :
-        //     generateLightForestPrebuilt(simData.enviroLayer(i), preset.enviromentData.at(i), preset.percentHumidityData.at(i));
-        //     break;
-        case Foliage::FOREST :
-            generateDenseForestPrebuilt(simData.enviroLayer(i));
-            break;
-
-        default:
-            std::cout<<"****FATAL ERROR: EviornmentType Preset not defined in TileComponent::generatePrebuilt()"<<std::endl;
-            std::cout<<"         Default build set to STONE"<<std::endl;
-            // default to build stone:
-            generateWaterPrebuilt(simData.enviroLayer(i));
-
-            break;
-        }
-
-        // set burn states
-        simData.enviroLayer(i).burnState = preset.fireState.at(i);
-        simData.windLayer(i).direction = Vec2f(1.f, 2.f);
-        simData.windLayer(i).direction.normal();
-        simData.windLayer(i).speed = 5;
-    }
-
-    // for all the ignition coords, light them on fire to highest heat
-    for(int i = 0; i < preset.ignitionPoints.size(); i++)
-    {
-        Vec2i coord = preset.ignitionPoints.at(i);
-
-        simData.enviroLayer.at(coord.x, coord.y).burnState = BurnState::ON_FIRE;
-        simData.enviroLayer.at(coord.x, coord.y).heatLevel.setToMax();
-    }
-    
+    static Vec2i directionUnitVectors[int(Direction::COUNT)] =
+    {{-1, 1}, { 0, 1}, { 1, 1},
+     {-1, 0}, { 0, 0}, { 1, 0},
+     {-1,-1}, { 0,-1}, { 1,-1}};
+    return directionUnitVectors[(int)dir];
 }
 
-void runFireSimStep(FireSimulationData& simData)
+
+inline Vec2i dir_to_coord(const Vec2i center, const Direction dir)
 {
-    // define variables
-    Vector_Grid<float> expectedDeltaHeat(0.f, simData.enviroLayer.size().x, simData.enviroLayer.size().y);
-
-
-    // // process burning fuel consumption
-    // for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    // {
-    //     TileComponent& curTile = simData.enviroLayer(i);
-
-    // }
-
-    // process cooling effects due to local moisture
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        TileComponent& curTile = simData.enviroLayer(i);
-        int moistureModifier = 1;
-
-        // if tile is very hot, make it better and removing moisture form itself
-        if(curTile.heatLevel > 3*curTile.heatLevel.getMax()/4)
-        {
-            moistureModifier = 2;
-        }
-
-        if(curTile.heatLevel >= 1)
-        {
-            if(curTile.moistureLevel >= (0.75 * curTile.moistureLevel.getMax()))
-            {
-                expectedDeltaHeat(i) -= int(6 / std::min(1.0, moistureModifier / 2.0));
-            }
-            else if(curTile.moistureLevel >= (0.40 * curTile.moistureLevel.getMax()))
-            {
-                expectedDeltaHeat(i) -= int(4 / moistureModifier);
-            }
-            else if(curTile.moistureLevel >= (0.20 * curTile.moistureLevel.getMax()))
-            {
-                expectedDeltaHeat(i) -= int(1);
-            }
-            // else if(curTile.moistureLevel >= 1)
-            // {
-            //     curTile.heatLevel -= 1;
-            // }
-        }
-    }
-    
-    // std::cout<<"end cooling:"<<std::endl;
-    // std::cout<<"process local heating:"<<std::endl;
-
-    // process local heating effects
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        TileComponent& curTile = simData.enviroLayer(i);
-
-        if(curTile.heatLevel >= 1 && curTile.moistureLevel > 0)
-        {
-            if(curTile.heatLevel >= (0.90 * curTile.heatLevel.getMax()))
-            {
-                curTile.moistureLevel -= 5 + biomeAtlas.at(curTile.biomeTag).moistureRetentionBonus;
-            }
-            else if(curTile.heatLevel >= (0.70 * curTile.heatLevel.getMax()))
-            {
-                curTile.moistureLevel -= 4 + biomeAtlas.at(curTile.biomeTag).moistureRetentionBonus;
-            }
-            else if(curTile.heatLevel >= (0.40 * curTile.heatLevel.getMax()))
-            {
-                curTile.moistureLevel -= 2 + biomeAtlas.at(curTile.biomeTag).moistureRetentionBonus;
-            }
-        }
-    }
-
-    // process burning fuel consumption
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        TileComponent& curTile = simData.enviroLayer(i);
-
-        if(curTile.burnState == BurnState::ON_FIRE)
-        {
-            // consume fuel based on current heat level
-            if(curTile.heatLevel >= (0.90 * curTile.heatLevel.getMax()))
-            {
-                curTile.fuelLevel -= 1;
-                expectedDeltaHeat(i) += 8 + biomeAtlas.at(curTile.biomeTag).tempIncreaseBonus;
-            }
-            else if(curTile.heatLevel >= (0.40 * curTile.heatLevel.getMax()))
-            {
-                curTile.fuelLevel -= 2;
-                expectedDeltaHeat(i) += 6.75 + biomeAtlas.at(curTile.biomeTag).tempIncreaseBonus;
-            }
-            else
-            {
-                curTile.fuelLevel -= 1;
-                expectedDeltaHeat(i) += 5.5 + biomeAtlas.at(curTile.biomeTag).tempIncreaseBonus;
-            }
-        }
-    }
-
-    // std::cout<<"end local heating:"<<std::endl;
-    // std::cout<<"process dispersed heating:"<<std::endl;
-
-    // calculated dispersed heading due to convection
-    //  TODO: incorperate wind effect
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        Vec2i curCoords = index_to_xy(i, simData.boardDimesions.x, simData.boardDimesions.y);
-        TileComponent& curTile = simData.enviroLayer(i);
-        const int AREA_OF_EFFECT = 3;
-        Vector_Grid<Vec2i> Coords = generateRelativeCoordinates(curCoords, AREA_OF_EFFECT);
-        const Vector_Grid<float> proximityWeights = generateProximityWeightMatrix(AREA_OF_EFFECT),
-                                windWeights = generateWindWeightMatrix(simData.windLayer, curCoords, AREA_OF_EFFECT);
-
-        // for each cell in the AOE, apply heating based on the current cell's temp
-        for(int j = 0; j < Coords.getLength(); j++)
-        {
-            int heatDiff = 0, temp = 0;
-            float coolingDivisor = 1.0;
-
-            
-            if(simData.enviroLayer.isInGrid(Coords(j).x, Coords(j).y))
-            {
-                heatDiff = curTile.heatLevel.getValue() - simData.enviroLayer.at(Coords(j).x, Coords(j).y).heatLevel.getValue();
-
-                if(heatDiff < 0) {coolingDivisor = 0.5; }
-
-                expectedDeltaHeat.at(Coords(j).x, Coords(j).y) += temp = std::round((proximityWeights(j) + windWeights(j)) * coolingDivisor * heatDiff); //
-
-                
-                // if(temp != 0)
-                // {
-                //     std::cout<<"("<<Coords(j).x<<", "<<Coords(j).y<<") "<<temp<< "  |  "<<expectedDeltaHeat.at(Coords(j).x, Coords(j).y)<<std::endl;
-                // }            
-            }
-        }
-    }
-
-    // for each cell above ambient (zero) apply a slight cooling effect
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        const float AMBIENT_COOLING_EFFECT = 1.65;
-        if(simData.enviroLayer(i).burnState != BurnState::ON_FIRE && simData.enviroLayer(i).heatLevel > 0)
-        {
-            expectedDeltaHeat(i) -= AMBIENT_COOLING_EFFECT;
-        }
-    }
-
-    // std::cout<<"end dispersed heating:"<<std::endl;
-    // std::cout<<"print delta heat:"<<std::endl;
-
-    // // print the resulting delta
-    // std::cout<<"Delta Heat added: "<<std::endl;
-    // for(int y = 0; y < simData.boardDimesions.y; y++)
-    // {
-    //     for(int x = 0; x < simData.boardDimesions.x; x++)
-    //     {
-    //         std::cout<<expectedDeltaHeat.at(x,y)<<"   ";
-    //     }
-    //     std::cout<<std::endl;
-    // }
-    // std::cout<<"===================="<<std::endl;
-
-    // post process the local heating data (clamp)
-    for(int i = 0; i < expectedDeltaHeat.getLength(); i++)
-    {
-        const float BUFFER_FACTOR = 0.75;
-        // reduce the effectivness of cooling
-        if(expectedDeltaHeat(i) < 0)
-        {
-            expectedDeltaHeat(i) = std::floor((expectedDeltaHeat(i) + BUFFER_FACTOR) / 11.f);
-        }
-        else
-        {
-            expectedDeltaHeat(i) = std::ceil((expectedDeltaHeat(i)- BUFFER_FACTOR) / 2.f);
-        }
-    }
-    
-    // // print the resulting delta
-    // std::cout<<"Delta Heat added: "<<std::endl;
-    // for(int y = 0; y < simData.boardDimesions.y; y++)
-    // {
-    //     for(int x = 0; x < simData.boardDimesions.x; x++)
-    //     {
-    //         std::cout<<expectedDeltaHeat.at(x,y)<<"   ";
-    //     }
-    //     std::cout<<std::endl;
-    // }
-    // std::cout<<"===================="<<std::endl;
-
-    // apply neighboring effects to board
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        simData.enviroLayer(i).heatLevel += expectedDeltaHeat(i);
-    }
-
-    // std::cout<<"print delta heat:"<<std::endl;
-    // std::cout<<"process ignition rules:"<<std::endl;
-
-    // define ignition rules
-    for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    {
-        TileComponent& curTile = simData.enviroLayer(i);
-
-        if(curTile.biomeTag != Foliage::WATER && curTile.biomeTag != Foliage::NONE)
-        {
-            switch (curTile.burnState)
-            {
-            case BurnState::NOT:
-                if(curTile.heatLevel >= IGNITION_LEVEL * biomeAtlas.at(curTile.biomeTag).ignitionResistanceFactor)
-                {
-                    curTile.burnState = BurnState::ON_FIRE;
-                }
-                break;
-            
-            case BurnState::ON_FIRE:
-                if(curTile.fuelLevel <= 0)
-                {
-                    curTile.burnState = BurnState::BURNED;
-                }
-                else if( curTile.heatLevel < IGNITION_LEVEL)
-                {
-                    curTile.burnState = BurnState::NOT;
-                }
-                break;
-            
-            case BurnState::BURNED:
-                
-                break;
-            
-            default:
-                break;
-            }
-        }
-
-    }
-    // std::cout<<"end ignition rules:"<<std::endl;
+    return center + dir_to_Vec2i(dir);
 }
 
-void drawFireSim(const FireSimulationData& simData, const Rectangle& bounds, const bool drawDetailedBoard, const bool drawWindVectors)
+inline Vec2i dir_to_coord(const size_t centerX, const size_t centerY, const Direction dir)
+{
+    return Vec2i(centerX, centerY) - dir_to_Vec2i(dir);
+}
+
+inline size_t dir_to_coord_x(const Vec2i center, const Direction dir)
+{
+    return center.x - dir_to_Vec2i(dir).x;
+}
+
+inline size_t dir_to_coord_x(const size_t x, const Direction dir)
+{
+    return x - dir_to_Vec2i(dir).x;
+}
+
+inline size_t dir_to_coord_y(const Vec2i center, const Direction dir)
+{
+    return center.x - dir_to_Vec2i(dir).y;
+}
+
+inline size_t dir_to_coord_y(const size_t y, const Direction dir)
+{
+    return y - dir_to_Vec2i(dir).y;
+}
+
+
+
+
+
+
+
+#ifdef GRAPHICS_ENABLED
+void drawFireSim(const Vector_Grid<Tile>& simData, const Rectangle& bounds, const bool drawDetailedBoard, const bool drawWindVectors)
 {
     // define variables
     const float reductionFactor = 0.75;
     Vector2 origin = {bounds.x, bounds.y};
-    int tileWidth  = int(bounds.width /simData.boardDimesions.x);
-    int tileHeight = int(bounds.height/simData.boardDimesions.y);
+    int tileWidth  = int(bounds.width /simData.size().x);
+    int tileHeight = int(bounds.height/simData.size().y);
     const float maxFlameRadius = 0.5*reductionFactor*tileWidth;
     float flameRadiusMult = 1.0;
 
@@ -323,26 +65,29 @@ void drawFireSim(const FireSimulationData& simData, const Rectangle& bounds, con
     burntOffset *= (1.f-reductionFactor) / 2;
 
     // draw based on the location in the array of each tile
-    for(int yIndex = 0; yIndex < simData.boardDimesions.y; yIndex++)
+    for(int yIndex = 0; yIndex < simData.size().y; yIndex++)
     {
-        for(int xIndex = 0; xIndex < simData.boardDimesions.x; xIndex++)
+        for(int xIndex = 0; xIndex < simData.size().x; xIndex++)
         {
-            const TileComponent& curTile = simData.enviroLayer.at(xIndex, yIndex);
+            const Tile& curTile = simData.at(xIndex, yIndex);
             Vec2i shapeOrigin = {origin.x+xIndex*tileWidth, origin.y+yIndex*tileHeight};
             Vec2i center = {shapeOrigin.x+(0.5* tileWidth), shapeOrigin.y+(0.5*tileHeight)};
 
 
-            switch (curTile.biomeTag)
+            switch (curTile.biome)
             {
             // case Foliage::STONE :
             //     DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, DARKGRAY);
             //     break;
             
-            case Foliage::WATER :
+            case Biome::WATER :
                 DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, DARKBLUE);
                 break;
+            case Biome::STONE :
+                DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, LIGHTGRAY);
+                break;
 
-            case Foliage::GRASS :
+            case Biome::GRASS :
                 DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, YELLOW);
                 break;
             // case Foliage::BRUSH :
@@ -351,26 +96,27 @@ void drawFireSim(const FireSimulationData& simData, const Rectangle& bounds, con
             // case Foliage::SPARSE_FOREST :
             //     DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, GREEN);
             //     break;
-            case Foliage::FOREST :
+            case Biome::FOREST :
                 DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, DARKGREEN);
                 break;
 
             default:
-                std::cout<<"****FATAL ERROR: EviornmentType Preset not defined in Game::DrawFireSim() "<< static_cast<int>(curTile.biomeTag)<<std::endl;
+                std::cout<<"****FATAL ERROR: EviornmentType Preset not defined in Game::DrawFireSim() "<< static_cast<int>(curTile.biome)<<std::endl;
                 DrawRectangle(shapeOrigin.x, shapeOrigin.y, tileWidth, tileHeight, GRAY);
                 break;
             }
 
             // if tile has been burned, then set a black square
-            if(curTile.burnState == BurnState::BURNED)
+            if(curTile.cond == Condition::BURNT)
             {
                 DrawRectangle(shapeOrigin.x+burntOffset.x, shapeOrigin.y+burntOffset.y, burntDim.x, burntDim.y, BLACK);
             }
             // if the tile is on fire, draw a red circle over it
-            else if(curTile.burnState == BurnState::ON_FIRE)
+            else if(curTile.cond == Condition::BURNING)
             {
                 // compute flame radius multiplier
-                flameRadiusMult = mapValuef(curTile.heatLevel.getValue(), curTile.heatLevel.getMin(), curTile.heatLevel.getMax(), 0.25, 1.0);
+                // let 200 be initial ignition temp and 1000 be the simulation cap
+                flameRadiusMult = mapValuef(curTile.temp, 200, 1000, 0.25, 1.0);
                 DrawCircle(center.x, center.y, (maxFlameRadius*flameRadiusMult), RED);
             }
 
@@ -381,15 +127,15 @@ void drawFireSim(const FireSimulationData& simData, const Rectangle& bounds, con
             if(drawDetailedBoard == true)
             {
                 Color textColor{BLACK};
-                std::string topText = "H:",
-                            middleText = "M:",
-                            bottomText = "F:";
+                std::string topText = "H:";
+                            // middleText = "M:",
+                            // bottomText = "F:";
 
-                topText.append(std::to_string(curTile.heatLevel.getValue()).c_str());
-                middleText.append(std::to_string(curTile.moistureLevel.getValue()));
-                bottomText.append(std::to_string(curTile.fuelLevel.getValue()));
+                topText.append(std::to_string(curTile.temp).c_str());
+                // middleText.append(std::to_string(curTile.moistureLevel.getValue()));
+                // bottomText.append(std::to_string(curTile.fuelLevel.getValue()));
 
-                if(curTile.burnState == BurnState::BURNED)
+                if(curTile.cond == Condition::BURNT)
                 {
                     textColor = WHITE;
                 }
@@ -397,11 +143,11 @@ void drawFireSim(const FireSimulationData& simData, const Rectangle& bounds, con
                 // draw temperature
                 DrawText(topText.c_str(), center.x-(maxFlameRadius*0.5), center.y-(maxFlameRadius*0.5), maxFlameRadius*0.5, textColor);
 
-                // draw middle text
-                DrawText(middleText.c_str(), center.x-(maxFlameRadius*0.5), center.y, maxFlameRadius*0.5, textColor);
+                // // draw middle text
+                // DrawText(middleText.c_str(), center.x-(maxFlameRadius*0.5), center.y, maxFlameRadius*0.5, textColor);
 
-                // draw remaining fuel
-                DrawText(bottomText.c_str(), center.x-(maxFlameRadius*0.5), center.y+(maxFlameRadius*0.5), maxFlameRadius*0.5, textColor);
+                // // draw remaining fuel
+                // DrawText(bottomText.c_str(), center.x-(maxFlameRadius*0.5), center.y+(maxFlameRadius*0.5), maxFlameRadius*0.5, textColor);
 
                 // // draw average heat map values
                 // DrawText(std::to_string(simData.averageHeatMapC.at(xIndex, yIndex)).c_str(), center.x-(maxFlameRadius*0.5), center.y+(maxFlameRadius*0.25), maxFlameRadius*0.5, WHITE);
@@ -409,232 +155,322 @@ void drawFireSim(const FireSimulationData& simData, const Rectangle& bounds, con
             }
 
             // draw the wind arrow
-            DrawLine(center.x, center.y, (center.x+simData.windLayer.at(xIndex,yIndex).direction.x*maxFlameRadius), (center.y+simData.windLayer.at(xIndex,yIndex).direction.y*maxFlameRadius), ORANGE);
+            //DrawLine(center.x, center.y, (center.x+simData.windLayer.at(xIndex,yIndex).direction.x*maxFlameRadius), (center.y+simData.windLayer.at(xIndex,yIndex).direction.y*maxFlameRadius), ORANGE);
         }
     }
 
 
     // now draw all horizontal lines
-    for(int y = 0; y <= simData.boardDimesions.y; y++)
+    for(int y = 0; y <= simData.size().y; y++)
     {
-        DrawLine(int(origin.x), int(origin.y+tileHeight*y), int(origin.x+simData.boardDimesions.x*tileWidth), int(origin.y+tileHeight*y), BLACK);
+        DrawLine(int(origin.x), int(origin.y+tileHeight*y), int(origin.x+simData.size().x*tileWidth), int(origin.y+tileHeight*y), BLACK);
     }
 
     // draw all vertical lines
-    for(int x = 0; x <= simData.boardDimesions.x; x++)
+    for(int x = 0; x <= simData.size().x; x++)
     {
-        DrawLine(int(origin.x+tileWidth*x), int(origin.y), int(origin.x+tileWidth*x), int(origin.y+simData.boardDimesions.y*tileHeight), BLACK);
+        DrawLine(int(origin.x+tileWidth*x), int(origin.y), int(origin.x+tileWidth*x), int(origin.y+simData.size().y*tileHeight), BLACK);
     }
 }
+#endif
 
 
+/* Function Name: Compute Differnce Matricies
+* Description: Assess the HeatMap and Computes a Difference Map for each cell in the heatmap. The difference matrix
+*   is the differnce in temperatures between a central cell and all if it's neighbors
+* Inputs: Vector_Grid of the heatmap, where each cell is the temperature value at that location
+* Preconditions:
+* Outputs: Vector_Grid of 3x3 Integer Matricies which have the complete temperature difference for each corrdinate direction
+*       Center will always be set to 0
+* Returns: Vector_Grid of 3x3 Integer Matricies which have the complete temperature difference for each corrdinate direction
+*       Center will always be set to 0
+* Postconditions:
+*/
+Vector_Grid<I3x3Matrix> computeDifferenceMatricies(const Vector_Grid<int>& heatMap)
+{
+    // define Variables
+    Vector_Grid<I3x3Matrix> diffM(I3x3Matrix{{0, 0, 0}}, heatMap.size().x, heatMap.size().y);
+    Vec2i gridSize = {heatMap.size().x, heatMap.size().y};
+    //int curTemp = 0;
+    //Vec2i curLoc = {0,0};
 
-
-
-
-
-
-
-
-
-
-
-    // // for each tile, loop through and compute the expected increase in temperature
-    // for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    // {
-    //     // define variables
-    //     TileComponent &curTile = simData.enviroLayer(i);
-    //     const Biome &biome = biomeAtlas.at(curTile.fuelTag);
-    //     int tempDiff = 0;
-
-
-
-
-
-    //     // apply natural cooling effects
-    //     tempDiff = curTile.temperatureC - AMBIENT_TEMPERATURE;
-    //     std::cout<<tempDiff<<"   ";
-    //     if(std::abs(tempDiff) > 5)
-    //     {
-    //         curTile.deltaTempC = curTile.deltaTempC - int(0.02 * tempDiff);
-    //         std::cout<<curTile.deltaTempC<<" | ";
-    //     }
-    //     else if (std::abs(tempDiff) > 1)
-    //     {
-    //         int fixedReductionAmount = 1;
-    //         if(tempDiff < 0) 
-    //         {
-    //             fixedReductionAmount *= -1;
-    //         }
-
-    //         curTile.deltaTempC = curTile.deltaTempC - fixedReductionAmount;
-    //     }
-    //     else
-    //     {
-    //         curTile.deltaTempC = curTile.deltaTempC - tempDiff;
-    //     }
-
-    // }
-    // std::cout<<std::endl;
-
-    // // perform state change effects -- includes applying and resetting delta T
-    // for(int i = 0; i < simData.enviroLayer.getLength(); i++)
-    // {
-    //     // define variables
-    //     TileComponent &curTile = simData.enviroLayer(i);
-    //     const Biome &biome = biomeAtlas.at(curTile.fuelTag);
-
-    //     // apply and reset delta t
-    //     curTile.temperatureC = std::clamp(curTile.temperatureC + curTile.deltaTempC, -100, biome.maxBurnTemperature);
-    //     curTile.deltaTempC = 0;
-
-    //     switch (curTile.burnState)
-    //     {
-    //     case BurnState::NOT:
-    //         if(curTile.temperatureC > biome.ignitionTemperature)
-    //         {
-    //             curTile.burnState = BurnState::ON_FIRE;
-    //         }
-    //         break;
-    //     case BurnState::ON_FIRE:
-    //         if(curTile.temperatureC <= biome.ignitionTemperature)
-    //         {
-    //             curTile.burnState = BurnState::NOT;
-    //         }
-    //         else if(curTile.percentFuelAvaliable <= 0)
-    //         {
-    //             curTile.burnState = BurnState::BURNED;
-    //         }
-    //         break;
-    //     case BurnState::BURNED:
-            
-    //         break;
+    //std::cout<<"computing difference matrix for len: "<<diffM.getLength()<<std::endl;
+    // loop through all cells
+    for(int i = 0; i < heatMap.getLength(); i++)
+    {
+        // Update Variables
+        int curTemp = heatMap(i);
+        Vec2i curLoc = index_to_xy(i, gridSize.x, gridSize.y);
         
-    //     default:
-    //         break;
-    //     }
-    // }
+        // printf("Error in computerDifferenceMatricies() --> Vector_Grid will not work, will thow Out Of Bounds Error. Need structure with border boundary\n Exiting\n");
+        // exit(1);
+        
+        // // for all of the coordinate directions, compute the difference
+        // diffM(i)[0][0] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::NW), dir_to_coord_y(curLoc.y, Direction::NW));
+        // diffM(i)[1][0] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::N),  dir_to_coord_y(curLoc.y, Direction::N));
+        // diffM(i)[2][0] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::NE), dir_to_coord_y(curLoc.y, Direction::NE));
 
+        // diffM(i)[0][1] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::W), dir_to_coord_y(curLoc.y, Direction::W));
+        // //diffM(i)[1][1] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::CENTER), dir_to_coord_y(curLoc.y, Direction::CENTER));
+        // diffM(i)[2][1] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::E), dir_to_coord_y(curLoc.y, Direction::E));
 
+        // diffM(i)[0][2] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::SW), dir_to_coord_y(curLoc.y, Direction::SW));
+        // diffM(i)[1][2] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::S),  dir_to_coord_y(curLoc.y, Direction::S));
+        // diffM(i)[2][2] = curTemp - heatMap.at(dir_to_coord_x(curLoc.x, Direction::SE), dir_to_coord_y(curLoc.y, Direction::SE));
 
-// prints the grid with optional spacers
-template<class T>
-void printGrid(const Vector_Grid<T>& src, const std::string& optionalSpacer, std::ostream& dest)
-{
-    for(int y = 0; y < src.size().y; y++)
-    {
-        for(int x = 0; x < src.size().x; x++)
-        {
-            dest<<src.at(x,y)<<optionalSpacer;
-        }
-        dest<<std::endl;
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::NW);
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::N);
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::NE);
+
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::W);
+        // cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::CENTER);
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::E);
+
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::SW);
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::S);
+        cellHeatDifference(diffM(i), curTemp, curLoc, heatMap, Direction::SE);
     }
-    dest<<std::endl;
+
+    // end of loop, print sample heat map
+    return diffM;
 }
 
-// generates a vector grid of size AOEWidth by AOEWidth centered on the centerCoord point. Each entry of the 
-//      resulting vector grid is a coordinate relative to the center coord
-// assumes that the resulting grid is an odd by odd lengthed shape
-//      ie, 3x3, 5x5, 7x7, etc
-Vector_Grid<Vec2i> generateRelativeCoordinates(const Vec2i& centerCoord, const int AOEWidth)
+/* Function Name: Cell Heat Difference Calculator
+* Description: A helper function for computerDifferenceMatricies() which computes the single step of a difference between one cell
+*       and one of its neighbors (using DIRECTION input)
+* Inputs: Ouput Matrix, Current center cell temp, current cell coordinate in the heatmap/map, and the direction from that cell
+* Preconditions:
+* Outputs: So long as adjacent point (from DIR variable) is in the heatmap grid, will compute the difference of heats, equates to:ADJ_OFFSET_SINGLESHOT
+*       adjacent temp - curTemp
+* Returns: none
+* Postconditions:
+*/
+void cellHeatDifference(I3x3Matrix& diffMatrix, const int curTemp, const Vec2i& curCell, const Vector_Grid<int>& heatMap, const Direction& Dir)
 {
-    // preprocessor assert
-    assert(AOEWidth % 2 == 1 && "AOEWidth was NOT an odd number; behavior undefined");
+    // Define variables
+    Vec2i index = Vec2i(1,1) + dir_to_Vec2i(Dir);
+    Vec2i loc = dir_to_coord(curCell, Dir);
 
-    // define variables
-    Vector_Grid<Vec2i> result(centerCoord, AOEWidth,AOEWidth);
-    int offset = (AOEWidth / 2);
-
-    for(int y = 0; y < AOEWidth; y++)
+    if(heatMap.isInGrid(loc.x, loc.y))
     {
-        for(int x = 0; x < AOEWidth; x++)
-        {
-            result.at(x,y) = {centerCoord.x + x - offset, centerCoord.y + y - offset};
-            //std::cout<<result.at(x,y).x<<", "<<result.at(x,y).y<<"    ";
-        }
-        //std::cout<<std::endl;
+        diffMatrix[index.y][index.x] = heatMap.at(loc.x, loc.y) - curTemp;
+
+        //printf("DiffMatrix[%d][%d] = %d\n", index.x, index.y, diffMatrix[index.x][index.y]);
     }
 
-    return result;
 }
 
-// generates a vector grid of weights between two upper and lower bounds centered on 
-//      the centeral point. The dimensions of the Grid are AOEWidth by AOEWidth centered on the
-//      true center of the rectangle
-// assumes that the resulting grid is an odd by odd lengthed shape. Only supports the following ATM
-//      ie, 3x3, 5x5
-Vector_Grid<float> generateProximityWeightMatrix(const int AOEWidth) //const float lowerBound, const float upperBound, 
+/* Function Name: Solve Detla Heat Level Map
+* Description: Converts results of difference matrix into a single intermediate heat value which will 
+*       map to a temperature increase/decrease value for the final simulation. Function takes heat differnce
+*       matrix grid and computes the intermediate heat level value from the non-zero results
+* Inputs: Heat Map Neighbor Difference Matrix Grid
+* Preconditions:
+* Outputs: integer vector grid of intermediate delta heat values
+* Returns: integer vector grid of intermediate delta heat values
+* Postconditions: intermediate delta heat values must be interpreted before being applied to heat map
+*/
+Vector_Grid<int> solveDeltaHeatLevel(const Vector_Grid<I3x3Matrix>& diffMatrix)
 {
-    // preprocess asserts
-    assert(AOEWidth % 2 == 1 && "AOEWidth was NOT an odd number; behavior undefined");
-    assert((AOEWidth == 3 || AOEWidth == 5) && "Other AOEWidth options NOT supported");
-
     // define variables
-    Vector_Grid<float> result(0.0, AOEWidth, AOEWidth);
+    Vector_Grid<int> deltaHeatLevels(0, diffMatrix.size().x, diffMatrix.size().y);
 
-    if(AOEWidth == 3)
+    for(int i = 0; i < diffMatrix.getLength(); i++)
     {
-        result = {
-            0.25, 0.5, 0.25,
-            0.5 , 0.f,  0.5,
-            0.25, 0.5, 0.25
-        };
-    }
-    else if(AOEWidth == 5)
-    {
-        result = {
-            0.125, 0.25, 0.25, 0.25, 0.125,
-            0.25,  0.35, 0.50, 0.35, 0.25,
-            0.25,  0.50, 0.f,  0.5,  0.25,
-            0.25,  0.35, 0.50, 0.35, 0.25,
-            0.125, 0.25, 0.25, 0.25, 0.125,
-        };
+        deltaHeatLevels(i) = deltaHeatLevelFromMatrix(diffMatrix(i));
     }
 
-    return result;
+    return deltaHeatLevels;
 }
 
-// generates a vector grid of weights between the wind direction and neighboring cells. Returns a Grid that determins how wind
-//      modifies the heat spreading calculations (dampens or increases them). All ccalculations are done relative to one centerCoord
-//      and basically return the effect of wind on that cell's ability to spread
-// assumes that the resulting grid is an odd by odd lengthed shape
-//      ie, 3x3, 5x5, 7x7, etc
-Vector_Grid<float> generateWindWeightMatrix(const Vector_Grid<WindComponent>& windLayer, const Vec2i& centerCoord, const int AOEWidth)
+/* Function Name: Compute Matrix Delta Heat Level
+* Description: Helper function for `solveDeltaHeatLevel()` which solves for a single 3x3 Matrix
+*       Generates a single intermediate delta heat level value.
+* Inputs: a single I3x3Matrix object of adjacent temperature differences
+* Preconditions:
+* Outputs: computes an intermediate delta heat level value for matrix
+* Returns: computes an intermediate delta heat level value for matrix
+* Postconditions: intermediate delta heat value must be interpreted before being applied to heat map
+*/
+int deltaHeatLevelFromMatrix(const I3x3Matrix& diffMatrix)
 {
     // define variables
-    Vector_Grid<float> result(0.0, AOEWidth, AOEWidth);
-    const float CUTOFF_ANGLE = 0.5;
-    int offset = (AOEWidth / 2);
+    int posHeat = 0, posCount = 0;
+    int negHeat = 0, negCount = 0;
 
-    for(int y = 0; y < AOEWidth; y++)
+}
+
+/* Function Name: Compute Matrix Median Values
+* Description: Finds the median positive and negative values in the matrix, respectfully. Ignores zeros
+* Inputs: I3x3Matrix
+* Preconditions:
+* Outputs: Pair of ints, First = Positive Median Value,
+                        Second = Negative Median Value
+* Returns: Pair of ints, First = Positive Median Value,
+                        Second = Negative Median Value
+* Postconditions:
+*/
+inline std::pair<int,int> computeMatrixMedian(const I3x3Matrix& diffMatrix)
+{
+    // define variables
+    int posMed = 0, negMed = 0;
+    std::vector<int> positives, negatives;
+
+    // reserve size
+    positives.reserve(8);
+    negatives.reserve(8);
+
+    for (int x = 0; x < 3; x++)
     {
-        for(int x = 0; x < AOEWidth; x++)
+        for (int y = 0; y < 3; y++)
         {
-            //CUTOFF_ANGLE = (1 / windLayer.at(x,y).speed);
-            float dotProd = windLayer.at(x,y).direction.dot({x - offset, y - offset});
-            //std::cout<<dotProd<<std::endl;
-
-            // if dot product is positive (at least almost in the direction of the wind flow)
-            if(dotProd == 0 && Vec2i(x,y) == centerCoord)
-            {
-                // wind effect due to self
-                result.at(x,y) = 0.35;
-            }
-            else if(dotProd > CUTOFF_ANGLE)
-            {
-                // higher winds
-                result.at(x,y) = mapValuef(dotProd, CUTOFF_ANGLE, 1.0, 0.25, 1.05);
-            }
-            else
-            {
-                // faster wind makes back flow much less effective
-                result.at(x,y) = mapValuef(dotProd, -1.0, CUTOFF_ANGLE, -0.12, 0);
-            }
+                 if(diffMatrix[x][y] > 0) {positives.push_back(diffMatrix[x][y]);}
+            else if(diffMatrix[x][y] < 0) {negatives.push_back(diffMatrix[x][y]);}
         }
     }
 
+    // sort lists if elements present
+    if (positives.size() > 0) 
+    {
+        std::sort(positives.begin(), positives.end());
+        posMed = positives.at(static_cast<int>(positives.size() / 2));
+    }
+    if (negatives.size() > 0)
+    {
+        std::sort(negatives.begin(), negatives.end());
+        negMed = negatives.at(static_cast<int>(negatives.size() / 2));
+    } 
 
-    if(Vec2i{5,5} == centerCoord){printGrid<float>(result, "   ", std::cout);}
+    return std::pair<int,int>(posMed, negMed);
+}
 
-    return result;
+/* Function Name: Compute Matrix Average Values
+* Description: Finds the average positive and negative value in the matrix, respectfully. Ignores zeros
+* Inputs:
+* Preconditions:
+* Outputs: Pair of floats, First = Positive Median Value,
+                          Second = Negative Median Value
+* Returns: Pair of floats, First = Positive Median Value,
+                          Second = Negative Median Value
+* Postconditions:
+*/
+inline std::pair<float,float> computeMatrixAverage(const I3x3Matrix& diffMatrix)
+{
+    // define variables
+    std::pair<float, int> positive, negative;
+
+    for (int x = 0; x < 3; x++)
+    {
+        for (int y = 0; y < 3; y++)
+        {
+            if(diffMatrix[x][y] > 0) 
+            {
+                positive.first += diffMatrix[x][y];
+                positive.second++;
+            }
+            else if(diffMatrix[x][y] < 0) 
+            {
+                negative.first += diffMatrix[x][y];
+                negative.second++;
+            }
+        }
+    }
+
+    // compute the averages and return
+    if (positive.second > 0) positive.first = static_cast<float>(positive.first / positive.second);
+    if (negative.second > 0) negative.first = static_cast<float>(negative.first / negative.second);
+
+    return std::pair<float, float>(positive.first, negative.first);
+}
+
+/* Function Name: Calculate Temperature Delta using Sum Median Method
+* Description: Assesses difference matrix and computes a delta temperature from formula:
+*       deltaTemperature = (median positive temp difference) + (median negative temp difference)
+* Inputs: A grid cell's difference matrix, cooling and heating damper multipliers as decimals (recommended ex 0.25 and 0.75)
+* Preconditions:
+* Outputs: a cell's calculated temperature increase/decrease in standard units
+* Returns: a cell's calculated temperature increase/decrease in standard units
+* Postconditions:
+*/
+float deltaTempSumMedian(const I3x3Matrix& diffMatrix, const float coolingDamperMultiplier, const float heatingDamperMultiplier)
+{
+    // Define Variables
+    std::pair<int,int> medians = computeMatrixMedian(diffMatrix);
+
+    // firest is positve median, second is negative median
+    return medians.first + medians.second;
+}
+
+/* Function Name: Calculate Temperature Delta using Sum Damped Median Method
+* Description: Assesses difference matrix and computes a delta temperature from formula:
+*   if pos med temp + neg med temp is positive
+*       deltaTemperature = heatingDamperMultiplier * ((median positive temp difference) + (median negative temp difference))
+*   otherwise
+*       deltaTemperature = coolingDamperMultiplier * ((median positive temp difference) + (median negative temp difference))
+* Inputs: A grid cell's difference matrix, cooling and heating damper multipliers as decimals (recommended ex 0.25 and 0.75)
+* Preconditions:
+* Outputs: a cell's calculated temperature increase/decrease in standard units
+* Returns: a cell's calculated temperature increase/decrease in standard units
+* Postconditions:
+*/
+float deltaTempSumDampenedMedian(const I3x3Matrix& diffMatrix, const float coolingDamperMultiplier, const float heatingDamperMultiplier)
+{
+    // Define Variables
+    std::pair<int,int> medians = computeMatrixMedian(diffMatrix); // First = PosMed, second = NegMed
+    int summedMedian = medians.first + medians.second;
+
+    // if positive, apply heating damper
+    if(summedMedian > 0) heatingDamperMultiplier * summedMedian;
+    // else cooling damper
+    else summedMedian = coolingDamperMultiplier * summedMedian;
+
+    return summedMedian;
+}
+
+
+/* Function Name: Calculate Temperature Delta using Damped Average Method
+* Description:  Assesses difference matrix and computes a delta temperature from formula:
+*       deltaTemperature = (heatingDamperMultiplier * AVG Pos Diff) + (coolingDamperMultiplier * AVG Neg Diff)
+* Inputs: A grid cell's difference matrix, cooling and heating damper multipliers as decimals (recommended ex 0.25 and 0.75)
+* Preconditions:
+* Outputs: a cell's calculated temperature increase/decrease in standard units
+* Returns: a cell's calculated temperature increase/decrease in standard units
+* Postconditions:
+*/
+float deltaTempDampedAverage(const I3x3Matrix& diffMatrix, const float coolingDamperMultiplier, const float heatingDamperMultiplier)
+{
+    // define variables
+    std::pair<float, float> averages = computeMatrixAverage(diffMatrix);
+
+    return (heatingDamperMultiplier*averages.first) + (coolingDamperMultiplier*averages.second);
+}
+
+/* Function Name: Calculate Temperature Delta using Max Damped Average Method
+* Description:  Assesses difference matrix and computes a delta temperature from formula:
+*   if DampendAverage < 0
+*       deltaTemperature = MAXIMUM(Average Negative, (coolingDamperMultiplier * Dampened AVG))
+*   otherwise
+*       deltaTemperature = MINIMUM(Average Positive, (HeatingDamperMultiplier * Dampened AVG))
+* Inputs: A grid cell's difference matrix, cooling and heating damper multipliers as decimals (recommended ex 0.25 and 0.75)
+* Preconditions:
+* Outputs: a cell's calculated temperature increase/decrease in standard units
+* Returns: a cell's calculated temperature increase/decrease in standard units
+* Postconditions:
+*/
+float deltaTempMaxDampedAverage(const I3x3Matrix& diffMatrix, const float coolingDamperMultiplier, const float heatingDamperMultiplier)
+{
+    // define variables
+    std::pair<float, float> averages = computeMatrixAverage(diffMatrix);
+    int dampedAvg = (heatingDamperMultiplier*averages.first) + (coolingDamperMultiplier*averages.second);
+
+    // if damped average is positive
+    if(dampedAvg > 0)
+    {
+        return std::min(averages.first, (heatingDamperMultiplier * dampedAvg));
+    }
+    else
+    {
+        return std::max(averages.second, (coolingDamperMultiplier * dampedAvg));
+    }
+    
 }

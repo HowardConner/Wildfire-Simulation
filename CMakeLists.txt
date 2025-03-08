@@ -9,9 +9,18 @@ set(CMAKE_CXX_STANDARD 17)
 # Include directories
 include_directories(/usr/include/raylib)
 
+# Set default build type to Debug if not specified
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose build type: Debug, Release, RelWithDebInfo, MinSizeRel" FORCE)
+endif()
+
+# Set compiler flags for Debug mode
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")  # -g: Debug symbols, -O0: No optimization, -DDEBUG: Define DEBUG macro
+set(CMAKE_C_FLAGS_DEBUG "-g -O0 -DDEBUG")
+
 # Source files
 set(SOURCES
-    main.cpp # Add your main source file here
+    main.cpp
     RenderEngine.cpp
     game.cpp
     lib/Vec2f.cpp

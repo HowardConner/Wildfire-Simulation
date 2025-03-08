@@ -1,6 +1,6 @@
 CMakeFiles/MAIN.dir/lib/Vec2i.cpp.o: \
- /home/conner/coding/wildfire/lib/Vec2i.cpp /usr/include/stdc-predef.h \
- /home/conner/coding/wildfire/lib/Vec2i.hpp /usr/include/c++/11/math.h \
+ /home/conner/coding/wildfire4/lib/Vec2i.cpp /usr/include/stdc-predef.h \
+ /home/conner/coding/wildfire4/lib/Vec2i.hpp /usr/include/c++/11/math.h \
  /usr/include/c++/11/cmath \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \

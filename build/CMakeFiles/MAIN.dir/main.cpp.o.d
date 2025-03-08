@@ -1,4 +1,4 @@
-CMakeFiles/MAIN.dir/main.cpp.o: /home/conner/coding/wildfire/main.cpp \
+CMakeFiles/MAIN.dir/main.cpp.o: /home/conner/coding/wildfire4/main.cpp \
  /usr/include/stdc-predef.h /usr/local/include/raylib.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdarg.h \
  /usr/local/include/raygui.h /usr/local/include/raylib.h \
@@ -96,11 +96,9 @@ CMakeFiles/MAIN.dir/main.cpp.o: /home/conner/coding/wildfire/main.cpp \
  /usr/include/c++/11/tr1/poly_hermite.tcc \
  /usr/include/c++/11/tr1/poly_laguerre.tcc \
  /usr/include/c++/11/tr1/riemann_zeta.tcc \
- /home/conner/coding/wildfire/src/raymath.h \
- /home/conner/coding/wildfire/RenderEngine.hpp \
- /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
- /usr/include/c++/11/ios /usr/include/c++/11/iosfwd \
- /usr/include/c++/11/bits/stringfwd.h \
+ /home/conner/coding/wildfire4/src/raymath.h /usr/include/c++/11/iostream \
+ /usr/include/c++/11/ostream /usr/include/c++/11/ios \
+ /usr/include/c++/11/iosfwd /usr/include/c++/11/bits/stringfwd.h \
  /usr/include/c++/11/bits/memoryfwd.h /usr/include/c++/11/bits/postypes.h \
  /usr/include/c++/11/cwchar /usr/include/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
@@ -173,16 +171,21 @@ CMakeFiles/MAIN.dir/main.cpp.o: /home/conner/coding/wildfire/main.cpp \
  /usr/include/c++/11/bits/locale_facets.tcc \
  /usr/include/c++/11/bits/basic_ios.tcc \
  /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
- /usr/include/c++/11/bits/istream.tcc /usr/include/c++/11/map \
- /usr/include/c++/11/bits/stl_tree.h \
- /usr/include/c++/11/ext/aligned_buffer.h \
- /usr/include/c++/11/bits/node_handle.h \
- /usr/include/c++/11/bits/stl_map.h /usr/include/c++/11/tuple \
- /usr/include/c++/11/utility /usr/include/c++/11/bits/stl_relops.h \
+ /usr/include/c++/11/bits/istream.tcc /usr/include/c++/11/iomanip \
+ /usr/include/c++/11/locale \
+ /usr/include/c++/11/bits/locale_facets_nonio.h /usr/include/c++/11/ctime \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/11/bits/codecvt.h \
+ /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/11/bits/locale_conv.h \
+ /usr/include/c++/11/bits/unique_ptr.h /usr/include/c++/11/utility \
+ /usr/include/c++/11/bits/stl_relops.h /usr/include/c++/11/tuple \
  /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
  /usr/include/c++/11/bits/invoke.h \
- /usr/include/c++/11/bits/stl_multimap.h \
- /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/vector \
+ /usr/include/c++/11/bits/quoted_string.h /usr/include/c++/11/sstream \
+ /usr/include/c++/11/bits/sstream.tcc \
+ /home/conner/coding/wildfire4/game.hpp /usr/include/c++/11/vector \
  /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
@@ -195,26 +198,22 @@ CMakeFiles/MAIN.dir/main.cpp.o: /home/conner/coding/wildfire/main.cpp \
  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
  /usr/include/c++/11/functional /usr/include/c++/11/bits/refwrap.h \
  /usr/include/c++/11/bits/std_function.h \
- /usr/include/c++/11/unordered_map /usr/include/c++/11/bits/hashtable.h \
+ /usr/include/c++/11/unordered_map \
+ /usr/include/c++/11/ext/aligned_buffer.h \
+ /usr/include/c++/11/bits/hashtable.h \
  /usr/include/c++/11/bits/hashtable_policy.h \
  /usr/include/c++/11/bits/enable_special_members.h \
+ /usr/include/c++/11/bits/node_handle.h \
  /usr/include/c++/11/bits/unordered_map.h \
- /usr/include/c++/11/pstl/execution_defs.h \
- /home/conner/coding/wildfire/RenderInfoComponent.hpp \
- /home/conner/coding/wildfire/Component.hpp \
- /home/conner/coding/wildfire/game.hpp /usr/include/c++/11/cassert \
- /usr/include/assert.h /home/conner/coding/wildfire/helperFunctions.hpp \
- /usr/include/c++/11/fstream /usr/include/c++/11/bits/codecvt.h \
+ /usr/include/c++/11/bits/erase_if.h \
+ /usr/include/c++/11/pstl/execution_defs.h /usr/include/c++/11/cassert \
+ /usr/include/assert.h /home/conner/coding/wildfire4/helperFunctions.hpp \
+ /usr/include/c++/11/fstream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
  /usr/include/c++/11/bits/fstream.tcc \
- /home/conner/coding/wildfire/TileComponent.hpp \
- /home/conner/coding/wildfire/GameSettingsConstants.hpp \
- /home/conner/coding/wildfire/Scale.hpp \
- /home/conner/coding/wildfire/WindComponent.hpp \
- /home/conner/coding/wildfire/lib/Vec2f.hpp \
- /home/conner/coding/wildfire/BiomeAtlas.hpp \
- /home/conner/coding/wildfire/SimulationPresets.hpp \
- /home/conner/coding/wildfire/lib/Vec2i.hpp \
- /home/conner/coding/wildfire/lib/Vector_Grid.hpp \
- /home/conner/coding/wildfire/lib/Array_Grid.hpp
+ /home/conner/coding/wildfire4/lib/Vector_Grid.hpp \
+ /home/conner/coding/wildfire4/lib/Array_Grid.hpp \
+ /home/conner/coding/wildfire4/lib/Vec2i.hpp \
+ /home/conner/coding/wildfire4/lib/Vec2f.hpp \
+ /home/conner/coding/wildfire4/Matrix3x3.hpp

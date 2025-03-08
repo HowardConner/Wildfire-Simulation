@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/usr/include/raylib
 
-CXX_FLAGS = 
+CXX_FLAGS = -g -O0 -DDEBUG
 

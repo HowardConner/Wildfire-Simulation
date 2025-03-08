@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/conner/coding/wildfire
+CMAKE_SOURCE_DIR = /home/conner/coding/wildfire4
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/conner/coding/wildfire/build
+CMAKE_BINARY_DIR = /home/conner/coding/wildfire4/build
 
 # Utility rule file for run_all.
 
@@ -82,6 +82,6 @@ CMakeFiles/run_all.dir/clean:
 .PHONY : CMakeFiles/run_all.dir/clean
 
 CMakeFiles/run_all.dir/depend:
-	cd /home/conner/coding/wildfire/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/conner/coding/wildfire /home/conner/coding/wildfire /home/conner/coding/wildfire/build /home/conner/coding/wildfire/build /home/conner/coding/wildfire/build/CMakeFiles/run_all.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/conner/coding/wildfire4/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/conner/coding/wildfire4 /home/conner/coding/wildfire4 /home/conner/coding/wildfire4/build /home/conner/coding/wildfire4/build /home/conner/coding/wildfire4/build/CMakeFiles/run_all.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/run_all.dir/depend
 

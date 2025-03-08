@@ -1,6 +1,7 @@
 CMakeFiles/MAIN.dir/RenderEngine.cpp.o: \
- /home/conner/coding/wildfire/RenderEngine.cpp /usr/include/stdc-predef.h \
- /home/conner/coding/wildfire/RenderEngine.hpp \
+ /home/conner/coding/wildfire4/RenderEngine.cpp \
+ /usr/include/stdc-predef.h \
+ /home/conner/coding/wildfire4/RenderEngine.hpp \
  /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -173,6 +174,6 @@ CMakeFiles/MAIN.dir/RenderEngine.cpp.o: \
  /usr/include/c++/11/bits/enable_special_members.h \
  /usr/include/c++/11/bits/unordered_map.h \
  /usr/include/c++/11/pstl/execution_defs.h \
- /home/conner/coding/wildfire/RenderInfoComponent.hpp \
- /home/conner/coding/wildfire/Component.hpp /usr/local/include/raylib.h \
+ /home/conner/coding/wildfire4/RenderInfoComponent.hpp \
+ /home/conner/coding/wildfire4/Component.hpp /usr/local/include/raylib.h \
  /usr/local/include/raygui.h /usr/local/include/raylib.h

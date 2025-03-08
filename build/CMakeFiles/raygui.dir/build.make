@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/conner/coding/wildfire
+CMAKE_SOURCE_DIR = /home/conner/coding/wildfire4
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/conner/coding/wildfire/build
+CMAKE_BINARY_DIR = /home/conner/coding/wildfire4/build
 
 # Utility rule file for raygui.
 
@@ -69,12 +69,12 @@ include CMakeFiles/raygui.dir/progress.make
 CMakeFiles/raygui: raygui.so
 
 raygui.so: ../src/raygui.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/conner/coding/wildfire/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Compiling raygui.c to create raygui.so"
-	gcc -o /home/conner/coding/wildfire/build/raygui.so /home/conner/coding/wildfire/src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/conner/coding/wildfire4/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Compiling raygui.c to create raygui.so"
+	gcc -o /home/conner/coding/wildfire4/build/raygui.so /home/conner/coding/wildfire4/src/raygui.c -shared -fpic -DRAYGUI_IMPLEMENTATION -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 
 ../src/raygui.c: ../src/raygui.h
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/conner/coding/wildfire/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Renaming raygui.h to raygui.c"
-	/usr/bin/cmake -E copy /home/conner/coding/wildfire/src/raygui.h /home/conner/coding/wildfire/src/raygui.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/conner/coding/wildfire4/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Renaming raygui.h to raygui.c"
+	/usr/bin/cmake -E copy /home/conner/coding/wildfire4/src/raygui.h /home/conner/coding/wildfire4/src/raygui.c
 
 raygui: CMakeFiles/raygui
 raygui: raygui.so
@@ -91,6 +91,6 @@ CMakeFiles/raygui.dir/clean:
 .PHONY : CMakeFiles/raygui.dir/clean
 
 CMakeFiles/raygui.dir/depend:
-	cd /home/conner/coding/wildfire/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/conner/coding/wildfire /home/conner/coding/wildfire /home/conner/coding/wildfire/build /home/conner/coding/wildfire/build /home/conner/coding/wildfire/build/CMakeFiles/raygui.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/conner/coding/wildfire4/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/conner/coding/wildfire4 /home/conner/coding/wildfire4 /home/conner/coding/wildfire4/build /home/conner/coding/wildfire4/build /home/conner/coding/wildfire4/build/CMakeFiles/raygui.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/raygui.dir/depend
 

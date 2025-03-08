@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/conner/coding/wildfire
+CMAKE_SOURCE_DIR = /home/conner/coding/wildfire4
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/conner/coding/wildfire/build
+CMAKE_BINARY_DIR = /home/conner/coding/wildfire4/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -85,14 +85,14 @@ clean: CMakeFiles/run_all.dir/clean
 CMakeFiles/MAIN.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MAIN.dir/build.make CMakeFiles/MAIN.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/MAIN.dir/build.make CMakeFiles/MAIN.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire/build/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target MAIN"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire4/build/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target MAIN"
 .PHONY : CMakeFiles/MAIN.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MAIN.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/MAIN.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 0
 .PHONY : CMakeFiles/MAIN.dir/rule
 
 # Convenience name for target.
@@ -111,14 +111,14 @@ CMakeFiles/MAIN.dir/clean:
 CMakeFiles/raygui.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/raygui.dir/build.make CMakeFiles/raygui.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/raygui.dir/build.make CMakeFiles/raygui.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire/build/CMakeFiles --progress-num=7,8 "Built target raygui"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire4/build/CMakeFiles --progress-num=7,8 "Built target raygui"
 .PHONY : CMakeFiles/raygui.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/raygui.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/raygui.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 0
 .PHONY : CMakeFiles/raygui.dir/rule
 
 # Convenience name for target.
@@ -137,14 +137,14 @@ CMakeFiles/raygui.dir/clean:
 CMakeFiles/clean_all.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean_all.dir/build.make CMakeFiles/clean_all.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean_all.dir/build.make CMakeFiles/clean_all.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire/build/CMakeFiles --progress-num= "Built target clean_all"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire4/build/CMakeFiles --progress-num= "Built target clean_all"
 .PHONY : CMakeFiles/clean_all.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/clean_all.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 0
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/clean_all.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 0
 .PHONY : CMakeFiles/clean_all.dir/rule
 
 # Convenience name for target.
@@ -163,14 +163,14 @@ CMakeFiles/clean_all.dir/clean:
 CMakeFiles/run_all.dir/all: CMakeFiles/MAIN.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_all.dir/build.make CMakeFiles/run_all.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/run_all.dir/build.make CMakeFiles/run_all.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire/build/CMakeFiles --progress-num= "Built target run_all"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/conner/coding/wildfire4/build/CMakeFiles --progress-num= "Built target run_all"
 .PHONY : CMakeFiles/run_all.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/run_all.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 6
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 6
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/run_all.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/conner/coding/wildfire4/build/CMakeFiles 0
 .PHONY : CMakeFiles/run_all.dir/rule
 
 # Convenience name for target.

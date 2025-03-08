@@ -34,9 +34,10 @@ U* newArray(const size_t& X, const size_t& Y, const U& defaultData)
 	// define variables
 	size_t count = 0;
 	U* pMem = nullptr;
+	const int TIMEOUT_COUNT = 20;
 
 	// loop until you get a pointer or timeout
-	while (pMem == nullptr && count < 20)
+	while (pMem == nullptr && count < TIMEOUT_COUNT)
 	{
 		// allocate new pointer
 		pMem = new U[X * Y];
@@ -73,6 +74,9 @@ U* newArray(const size_t& X, const size_t& Y, const U& defaultData)
 template <class U>
 inline void copyArray(const U* src, U* dest, const unsigned& maxIndex)
 {
+	assert(src != nullptr || "src pointer undefined");
+	assert(dest != nullptr || "dest pointer undefined");
+
 	for (unsigned index = 0; index < maxIndex; index++)
 	{
 		dest[index] = src[index];
@@ -193,7 +197,7 @@ public:
 	void clear();
 
 protected:
-	size_t_pair mSize;
+	size_t_pair mSize = {0,0};
 	// size_t mCurrentlyOccupied;
 	T mDefaultInitializer;
 	T* mData = nullptr;
@@ -266,8 +270,8 @@ Array_Grid<T>::Array_Grid(const Array_Grid& copy) : mDefaultInitializer(copy.mDe
 template <class T>
 Array_Grid<T>& Array_Grid<T>::operator=(const Array_Grid& lhs)
 {
-	this->mSize.x = lhs.mSize.x;
-	this->mSize.y = lhs.mSize.y;
+	//this->mSize.x = lhs.mSize.x;
+	//this->mSize.y = lhs.mSize.y;
 	this->mDefaultInitializer = lhs.mDefaultInitializer;
 
 	this->copyArrayData(lhs);
@@ -279,7 +283,7 @@ Array_Grid<T>& Array_Grid<T>::operator=(const Array_Grid& lhs)
 template <class T>
 Array_Grid<T>& Array_Grid<T>::operator=(const std::initializer_list<T>& initList)
 {
-	assert(initList.size() == this->getLength() && "FATAL ERROR: Initializer List incompatable size");
+	assert(initList.getLength() == this->getLength() && "FATAL ERROR: Initializer List incompatable size");
 
 	size_t i = 0;
 	for(const auto& elem : initList)
@@ -430,7 +434,6 @@ void Array_Grid<T>::copyArrayData(const Array_Grid<T>& src)
 	{
 		this->resize(src.mSize, true);
 	}
-
 	// copy array data
 	copyArray(src.mData, this->mData, (mSize.y * mSize.x));
 }
@@ -490,12 +493,15 @@ void Array_Grid<T>::resize(const size_t_pair& newSize, const bool& clear)
 	// copy data if requested
 	if (clear == false && this->mData != nullptr)
 	{
+
 		// copy the data from this to pMem
 		copyArray(this->mData, pMem, static_cast<const unsigned>(mSize.y * mSize.x));
 
 		// now clear the old data and pin the new
 		delete[] this->mData;
 		this->mData = pMem;
+		mSize.x = newSize.x;
+		mSize.y = newSize.y;
 	}
 	// otherwise, just pin the new data
 	else
