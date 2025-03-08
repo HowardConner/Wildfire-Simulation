@@ -50,9 +50,18 @@ enum class Direction{
     COUNT
 };
 
+enum class Direct_Solver{
+    SUM_MEDIAN = 0,
+    SUM_DAMPENED_MEDIAN,
+    DAMPENED_AVERAGE,
+    MAX_DAMPENED_AVERAGE
+};
+
 // define an object called a 3x3 matrix
 using I3x3Matrix = Matrix3x3<int>;
 using F3x3Matrix = Matrix3x3<float>;
+
+const int TEMP_DELTA_MAX_HEAT = 20, TEMP_DELTS_MIN_COOL = -10;
 
 typedef struct
 {
@@ -107,7 +116,46 @@ Vector_Grid<I3x3Matrix> computeDifferenceMatricies(const Vector_Grid<int>& heatM
 void cellHeatDifference(I3x3Matrix& diffMatrix, const int curTemp, const Vec2i& curCell, const Vector_Grid<int>& heatMap, const Direction& Dir);
 
 
-
+// add grids together
+// precondition: grids must be the same size
+inline void addGrid(Vector_Grid<int>& rhs, const Vector_Grid<int>& lhs)
+{
+    assert((rhs.size().x == lhs.size().x && rhs.size().y == lhs.size().y) || "Grids are not the same size addGrid() failed");
+    for(int i = 0; i < rhs.getLength(); i++)
+    {
+        rhs(i) = rhs(i) + lhs(i);
+    }
+}
+// add grids together (float overload)
+// precondition: grids must be the same size
+inline void addGrid(Vector_Grid<float>& rhs, const Vector_Grid<float>& lhs)
+{
+    assert((rhs.size().x == lhs.size().x && rhs.size().y == lhs.size().y) || "Grids are not the same size addGrid() failed");
+    for(int i = 0; i < rhs.getLength(); i++)
+    {
+        rhs(i) = rhs(i) + lhs(i);
+    }
+}
+// add grids together (int rhs, float lhs overload)
+// precondition: grids must be the same size
+inline void addGrid(Vector_Grid<int>& rhs, const Vector_Grid<float>& lhs)
+{
+    assert((rhs.size().x == lhs.size().x && rhs.size().y == lhs.size().y) || "Grids are not the same size addGrid() failed");
+    for(int i = 0; i < rhs.getLength(); i++)
+    {
+        rhs(i) = rhs(i) + lhs(i);
+    }
+}
+// add grids together (float rhs, int lhs overload)
+// precondition: grids must be the same size
+inline void addGrid(Vector_Grid<float>& rhs, const Vector_Grid<int>& lhs)
+{
+    assert((rhs.size().x == lhs.size().x && rhs.size().y == lhs.size().y) || "Grids are not the same size addGrid() failed");
+    for(int i = 0; i < rhs.getLength(); i++)
+    {
+        rhs(i) = rhs(i) + lhs(i);
+    }
+}
 
 // prints the grid with optional spacers
 // REMINDER: Template functions are only allowed in header files
@@ -151,30 +199,6 @@ inline void printGrid<I3x3Matrix>(const Vector_Grid<I3x3Matrix>& src, const std:
 }
 
 
-/* Function Name: Solve Detla Heat Level Map
-* Description: Converts results of difference matrix into a single intermediate heat value which will 
-*       map to a temperature increase/decrease value for the final simulation. Function takes heat differnce
-*       matrix grid and computes the intermediate heat level value from the non-zero results
-* Inputs: Heat Map Neighbor Difference Matrix Grid
-* Preconditions:
-* Outputs: integer vector grid of intermediate delta heat values
-* Returns: integer vector grid of intermediate delta heat values
-* Postconditions: intermediate delta heat values must be interpreted before being applied to heat map
-*/
-Vector_Grid<int> solveDeltaHeatLevel(const Vector_Grid<I3x3Matrix>& diffMatrix);
-
-/* Function Name: Compute Matrix Delta Heat Level
-* Description: Helper function for `solveDeltaHeatLevel()` which solves for a single 3x3 Matrix
-*       Generates a single intermediate delta heat level value.
-* Inputs: a single I3x3Matrix object of adjacent temperature differences
-* Preconditions:
-* Outputs: computes an intermediate delta heat level value for matrix
-* Returns: computes an intermediate delta heat level value for matrix
-* Postconditions: intermediate delta heat value must be interpreted before being applied to heat map
-*/
-int deltaHeatLevelFromMatrix(const I3x3Matrix& diffMatrix);
-
-
 /* Function Name: Compute Matrix Median Values
 * Description: Finds the median positive and negative values in the matrix, respectfully. Ignores zeros
 * Inputs: I3x3Matrix
@@ -198,6 +222,30 @@ inline std::pair<int,int> computeMatrixMedian(const I3x3Matrix& diffMatrix);
 * Postconditions:
 */
 inline std::pair<float,float> computeMatrixAverage(const I3x3Matrix& diffMatrix);
+
+/* Function Name: Solve Detla Heat Level Map
+* Description: Converts results of difference matrix into a single intermediate heat value which will 
+*       map to a temperature increase/decrease value for the final simulation. Function takes heat differnce
+*       matrix grid and computes the intermediate heat level value from the non-zero results
+* Inputs: Heat Map Neighbor Difference Matrix Grid
+* Preconditions:
+* Outputs: integer vector grid of intermediate delta heat values
+* Returns: integer vector grid of intermediate delta heat values
+* Postconditions: intermediate delta heat values must be interpreted before being applied to heat map
+*/
+Vector_Grid<int> solveDeltaHeatLevel(const Vector_Grid<I3x3Matrix>& diffMatrix);
+
+/* Function Name: Compute Matrix Delta Heat Level
+* Description: Helper function for `solveDeltaHeatLevel()` which solves for a single 3x3 Matrix
+*       Generates a single intermediate delta heat level value.
+* Inputs: a single I3x3Matrix object of adjacent temperature differences
+* Preconditions:
+* Outputs: computes an intermediate delta heat level value for matrix
+* Returns: computes an intermediate delta heat level value for matrix
+* Postconditions: intermediate delta heat value must be interpreted before being applied to heat map
+*/
+int deltaHeatLevelFromMatrix(const I3x3Matrix& diffMatrix);
+
 
 
 /* Function Name: Calculate Temperature Delta using Sum Median Method
@@ -249,6 +297,41 @@ float deltaTempDampedAverage(const I3x3Matrix& diffMatrix, const float coolingDa
 * Postconditions:
 */
 float deltaTempMaxDampedAverage(const I3x3Matrix& diffMatrix, const float coolingDamperMultiplier, const float heatingDamperMultiplier);
+
+/* Function Name:
+* Description: Uses "direct-solve" Methods to compute the change in the heat map temperature for the next simulation step. "direct-
+*       solve" differes from the intermediate method since it directly computes the delte temperature value from convection events
+*   Mode <SUM_MEDIAN> applies the deltaTempSumMedian() function to each matrix
+*   Mode <SUM_DAMPENED_MEDIAN> Applies deltaTempSumDampenedMedian()
+*   Mode <DAMPENED_AVERAGE> Applies deltaTempDampenedAverage()
+*   Mode <MAX_DAMPEDED_AVERAGE> Applies deltaTempMaxDampenedAverage()
+* Inputs: difference matrix to process, defined solver mode
+* Preconditions:
+* Outputs: Float Vector_Grid of heat delta values, +/-, to be applied directly to the heat map
+* Returns: Float Vector_Grid of heat delta values, +/-, to be applied directly to the heat map
+* Postconditions:
+*/
+Vector_Grid<float> directSolveDeltaTemperature(const Vector_Grid<I3x3Matrix>& diffMatrix, const Direct_Solver mode);
+
+/* Function Name:
+* Description:
+* Inputs:
+* Preconditions:
+* Outputs:
+* Returns:
+* Postconditions:
+*/
+Vector_Grid<int> computeCombustionEffects(const Vector_Grid<int>& heatMap);
+
+/* Function Name: Apply Abient Temperature Damping
+* Description: Function slighly pulls the heat map temperature closer to ambient, simulating a large-body of the atmospher
+* Inputs: Heat Map to assess, current ambient temperature
+* Preconditions:
+* Outputs: map of delta temp values which should be applied to the heat map
+* Returns: map of delta temp values which should be applied to the heat map
+* Postconditions:
+*/
+Vector_Grid<float> applyAmbientDamping(const Vector_Grid<int>& heatMap, const int ambient);
 
 
 /* Function Name:

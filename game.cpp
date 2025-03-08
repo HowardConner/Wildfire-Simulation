@@ -257,47 +257,6 @@ void cellHeatDifference(I3x3Matrix& diffMatrix, const int curTemp, const Vec2i& 
 
         //printf("DiffMatrix[%d][%d] = %d\n", index.x, index.y, diffMatrix[index.x][index.y]);
     }
-
-}
-
-/* Function Name: Solve Detla Heat Level Map
-* Description: Converts results of difference matrix into a single intermediate heat value which will 
-*       map to a temperature increase/decrease value for the final simulation. Function takes heat differnce
-*       matrix grid and computes the intermediate heat level value from the non-zero results
-* Inputs: Heat Map Neighbor Difference Matrix Grid
-* Preconditions:
-* Outputs: integer vector grid of intermediate delta heat values
-* Returns: integer vector grid of intermediate delta heat values
-* Postconditions: intermediate delta heat values must be interpreted before being applied to heat map
-*/
-Vector_Grid<int> solveDeltaHeatLevel(const Vector_Grid<I3x3Matrix>& diffMatrix)
-{
-    // define variables
-    Vector_Grid<int> deltaHeatLevels(0, diffMatrix.size().x, diffMatrix.size().y);
-
-    for(int i = 0; i < diffMatrix.getLength(); i++)
-    {
-        deltaHeatLevels(i) = deltaHeatLevelFromMatrix(diffMatrix(i));
-    }
-
-    return deltaHeatLevels;
-}
-
-/* Function Name: Compute Matrix Delta Heat Level
-* Description: Helper function for `solveDeltaHeatLevel()` which solves for a single 3x3 Matrix
-*       Generates a single intermediate delta heat level value.
-* Inputs: a single I3x3Matrix object of adjacent temperature differences
-* Preconditions:
-* Outputs: computes an intermediate delta heat level value for matrix
-* Returns: computes an intermediate delta heat level value for matrix
-* Postconditions: intermediate delta heat value must be interpreted before being applied to heat map
-*/
-int deltaHeatLevelFromMatrix(const I3x3Matrix& diffMatrix)
-{
-    // define variables
-    int posHeat = 0, posCount = 0;
-    int negHeat = 0, negCount = 0;
-
 }
 
 /* Function Name: Compute Matrix Median Values
@@ -383,6 +342,49 @@ inline std::pair<float,float> computeMatrixAverage(const I3x3Matrix& diffMatrix)
     return std::pair<float, float>(positive.first, negative.first);
 }
 
+
+/* Function Name: Solve Detla Heat Level Map
+* Description: Converts results of difference matrix into a single intermediate heat value which will 
+*       map to a temperature increase/decrease value for the final simulation. Function takes heat differnce
+*       matrix grid and computes the intermediate heat level value from the non-zero results
+* Inputs: Heat Map Neighbor Difference Matrix Grid
+* Preconditions:
+* Outputs: integer vector grid of intermediate delta heat values
+* Returns: integer vector grid of intermediate delta heat values
+* Postconditions: intermediate delta heat values must be interpreted before being applied to heat map
+*/
+Vector_Grid<int> solveDeltaHeatLevel(const Vector_Grid<I3x3Matrix>& diffMatrix)
+{
+    // define variables
+    Vector_Grid<int> deltaHeatLevels(0, diffMatrix.size().x, diffMatrix.size().y);
+
+    for(int i = 0; i < diffMatrix.getLength(); i++)
+    {
+        deltaHeatLevels(i) = deltaHeatLevelFromMatrix(diffMatrix(i));
+    }
+
+    return deltaHeatLevels;
+}
+
+/* Function Name: Compute Matrix Delta Heat Level
+* Description: Helper function for `solveDeltaHeatLevel()` which solves for a single 3x3 Matrix
+*       Generates a single intermediate delta heat level value.
+* Inputs: a single I3x3Matrix object of adjacent temperature differences
+* Preconditions:
+* Outputs: computes an intermediate delta heat level value for matrix
+* Returns: computes an intermediate delta heat level value for matrix
+* Postconditions: intermediate delta heat value must be interpreted before being applied to heat map
+*/
+int deltaHeatLevelFromMatrix(const I3x3Matrix& diffMatrix)
+{
+    // define variables
+    int posHeat = 0, posCount = 0;
+    int negHeat = 0, negCount = 0;
+
+}
+
+
+
 /* Function Name: Calculate Temperature Delta using Sum Median Method
 * Description: Assesses difference matrix and computes a delta temperature from formula:
 *       deltaTemperature = (median positive temp difference) + (median negative temp difference)
@@ -396,6 +398,8 @@ float deltaTempSumMedian(const I3x3Matrix& diffMatrix, const float coolingDamper
 {
     // Define Variables
     std::pair<int,int> medians = computeMatrixMedian(diffMatrix);
+    medians.first = std::min(medians.first, TEMP_DELTA_MAX_HEAT);
+    medians.second = std::max(medians.second, TEMP_DELTS_MIN_COOL);
 
     // firest is positve median, second is negative median
     return medians.first + medians.second;
@@ -417,6 +421,9 @@ float deltaTempSumDampenedMedian(const I3x3Matrix& diffMatrix, const float cooli
 {
     // Define Variables
     std::pair<int,int> medians = computeMatrixMedian(diffMatrix); // First = PosMed, second = NegMed
+    medians.first = std::min(medians.first, TEMP_DELTA_MAX_HEAT);
+    medians.second = std::max(medians.second, TEMP_DELTS_MIN_COOL);
+
     int summedMedian = medians.first + medians.second;
 
     // if positive, apply heating damper
@@ -441,6 +448,8 @@ float deltaTempDampedAverage(const I3x3Matrix& diffMatrix, const float coolingDa
 {
     // define variables
     std::pair<float, float> averages = computeMatrixAverage(diffMatrix);
+    averages.first = std::min(averages.first, (float)TEMP_DELTA_MAX_HEAT);
+    averages.second = std::max(averages.second, (float)TEMP_DELTS_MIN_COOL);
 
     return (heatingDamperMultiplier*averages.first) + (coolingDamperMultiplier*averages.second);
 }
@@ -461,16 +470,101 @@ float deltaTempMaxDampedAverage(const I3x3Matrix& diffMatrix, const float coolin
 {
     // define variables
     std::pair<float, float> averages = computeMatrixAverage(diffMatrix);
-    int dampedAvg = (heatingDamperMultiplier*averages.first) + (coolingDamperMultiplier*averages.second);
+    averages.first = std::min(averages.first, (float)TEMP_DELTA_MAX_HEAT);
+    averages.second = std::max(averages.second, (float)TEMP_DELTS_MIN_COOL);
+    // int dampedAvg = (heatingDamperMultiplier*averages.first) + (coolingDamperMultiplier*averages.second);
+    int dampedAvg = (averages.first) + (averages.second);
+
 
     // if damped average is positive
     if(dampedAvg > 0)
     {
         return std::min(averages.first, (heatingDamperMultiplier * dampedAvg));
     }
-    else
+    else if (dampedAvg < 0)
     {
         return std::max(averages.second, (coolingDamperMultiplier * dampedAvg));
     }
+    else return 0;
     
+}
+
+/* Function Name:
+* Description: Uses "direct-solve" Methods to compute the change in the heat map temperature for the next simulation step. "direct-
+*       solve" differes from the intermediate method since it directly computes the delte temperature value from convection events
+*   Mode <SUM_MEDIAN> applies the deltaTempSumMedian() function to each matrix
+*   Mode <SUM_DAMPENED_MEDIAN> Applies deltaTempSumDampenedMedian()
+*   Mode <DAMPENED_AVERAGE> Applies deltaTempDampenedAverage()
+*   Mode <MAX_DAMPEDED_AVERAGE> Applies deltaTempMaxDampenedAverage()
+* Inputs: difference matrix to process, defined solver mode
+* Preconditions:
+* Outputs: Float Vector_Grid of heat delta values, +/-, to be applied directly to the heat map
+* Returns: Float Vector_Grid of heat delta values, +/-, to be applied directly to the heat map
+* Postconditions:
+*/
+Vector_Grid<float> directSolveDeltaTemperature(const Vector_Grid<I3x3Matrix>& diffMatrix, const Direct_Solver mode)
+{
+    // define variables
+    Vector_Grid<float> deltaHeatMap(0, diffMatrix.size().x, diffMatrix.size().y);
+    const float HEAT_MUTLI = 0.5, COOL_MULTI = 0.15;
+
+    switch (mode)
+    {
+    case Direct_Solver::SUM_MEDIAN:
+        for(int i = 0; i < diffMatrix.getLength(); i++)
+        {
+            deltaHeatMap(i) = deltaTempSumMedian(diffMatrix(i), HEAT_MUTLI, COOL_MULTI);
+        }
+        break;
+    case Direct_Solver::SUM_DAMPENED_MEDIAN:
+        for(int i = 0; i < diffMatrix.getLength(); i++)
+        {
+            deltaHeatMap(i) = deltaTempSumDampenedMedian(diffMatrix(i), HEAT_MUTLI, COOL_MULTI);
+        }
+        break;
+    case Direct_Solver::DAMPENED_AVERAGE:
+        for(int i = 0; i < diffMatrix.getLength(); i++)
+        {
+            deltaHeatMap(i) = deltaTempDampedAverage(diffMatrix(i), HEAT_MUTLI, COOL_MULTI);
+        }
+        break;
+    case Direct_Solver::MAX_DAMPENED_AVERAGE:
+        for(int i = 0; i < diffMatrix.getLength(); i++)
+        {
+            deltaHeatMap(i) = deltaTempMaxDampedAverage(diffMatrix(i), HEAT_MUTLI, COOL_MULTI);
+        }
+        break;
+    
+    default:
+        std::cout<<"***WARNING*** Solver Mode does not have a definition set --> See directSolveDeltaTemperature()"<<std::endl;
+        break;
+    }
+
+    return deltaHeatMap;
+}
+
+/* Function Name: Apply Abient Temperature Damping
+* Description: Function slighly pulls the heat map temperature closer to ambient, simulating a large-body of the atmospher
+* Inputs: Heat Map to assess, current ambient temperature
+* Preconditions:
+* Outputs: map of delta temp values which should be applied to the heat map
+* Returns: map of delta temp values which should be applied to the heat map
+* Postconditions:
+*/
+Vector_Grid<float> applyAmbientDamping(const Vector_Grid<int>& heatMap, const int ambient)
+{
+    // define variables
+    Vector_Grid<float> deltaHeatMap(0, heatMap.size().x, heatMap.size().y);
+    const float HEAT_MUTLI = 0.15, COOL_MULTI = 0.2;
+
+    for(int i = 0; i < heatMap.getLength(); i++)
+    {
+        int diff = heatMap(i) - ambient;
+
+        // if cell is hotter, pull it down by an ammount
+        if(diff > 0)       deltaHeatMap(i) = std::min(-1.f, (-1.f) * COOL_MULTI * (float)sqrt(diff));
+        else if (diff < 0) deltaHeatMap(i) = std::max( 1.f, (-1.f) * HEAT_MUTLI * (float)sqrt(diff));
+    }
+
+    return deltaHeatMap;
 }
